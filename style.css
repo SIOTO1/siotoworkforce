@@ -117,3 +117,6 @@ textarea{resize:vertical}
 .band-copy h2{max-width:24ch;color:#fff}
 .band-copy p{margin-top:1.2rem;color:#d6dce5;max-width:62ch}
 .section-head h2{margin-bottom:0}
+.hp{position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden}
+.ok h3{font-size:var(--text-lg);margin-bottom:.5rem}.ok p{color:var(--muted)}
+.btn:disabled{opacity:.7;cursor:wait}

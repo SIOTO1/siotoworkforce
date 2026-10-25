@@ -131,7 +131,9 @@
       <h2>Tell us about your team</h2>
       <p>Fill out the form and we'll get back to you. You can also call <a href="tel:+18447468600">844.746.8600</a> or email <a href="mailto:info@sioto.com">info@sioto.com</a>.</p>
     </div>
-    <form id="lead" class="form" novalidate>
+    <form id="lead" class="form" name="training-request" method="POST" data-netlify="true" netlify-honeypot="company_website" novalidate>
+      <input type="hidden" name="form-name" value="training-request">
+      <p class="hp" aria-hidden="true"><label>Leave this empty<input name="company_website" tabindex="-1" autocomplete="off"></label></p>
       <div class="row">
         <label>Name<input name="name" autocomplete="name" required></label>
         <label>Company<input name="company" autocomplete="organization" required></label>
@@ -151,7 +153,8 @@
       <label>What would you like your team to do better?<textarea name="msg" rows="4"></textarea></label>
       <p class="err" id="err" role="alert" hidden>Please add your name, company, and a valid email.</p>
       <button class="btn" type="submit">Send request</button>
-      <p class="fine">This opens an email to info@sioto.com with your details filled in.</p>
+      <p class="fine" id="fine">Your request goes straight to our team at info@sioto.com.</p>
+      <div class="ok" id="ok" role="status" hidden><h3>Thanks, we got your request.</h3><p>We'll reach out soon. If it's urgent, call 844.746.8600.</p></div>
     </form>
   </div>
 </section>
@@ -166,11 +169,21 @@
 <script>
 document.getElementById('lead').addEventListener('submit',function(e){
   e.preventDefault();
-  var f=e.target,err=document.getElementById('err');
-  var ok=f.name.value.trim()&&f.company.value.trim()&&/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(f.email.value.trim());
+  var f=e.target,v=function(n){return (f.elements[n].value||'').trim()},err=document.getElementById('err');
+  var ok=v('name')&&v('company')&&/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(v('email'));
   if(!ok){err.hidden=false;return;} err.hidden=true;
-  var body='Name: '+f.name.value+'\nCompany: '+f.company.value+'\nEmail: '+f.email.value+'\nPhone: '+f.phone.value+'\nEmployees to train: '+f.size.value+'\nMain interest: '+f.track.value+'\n\n'+f.msg.value;
-  window.location.href='mailto:info@sioto.com?subject='+encodeURIComponent('Training request: '+f.company.value)+'&body='+encodeURIComponent(body);
+  var btn=f.querySelector('button');btn.disabled=true;btn.textContent='Sending...';
+  function mailFallback(){
+    var body='Name: '+v('name')+'\nCompany: '+v('company')+'\nEmail: '+v('email')+'\nPhone: '+v('phone')+'\nEmployees to train: '+v('size')+'\nMain interest: '+v('track')+'\n\n'+v('msg');
+    window.location.href='mailto:info@sioto.com?subject='+encodeURIComponent('Training request: '+v('company'))+'&body='+encodeURIComponent(body);
+    btn.disabled=false;btn.textContent='Send request';
+  }
+  fetch('/',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:new URLSearchParams(new FormData(f)).toString()})
+    .then(function(r){
+      if(!r.ok) throw new Error(r.status);
+      f.querySelectorAll('.row,label,button,#fine').forEach(function(el){el.hidden=true;el.style.display='none'});
+      document.getElementById('ok').hidden=false;
+    }).catch(mailFallback);
 });
 </script>
 </body>
