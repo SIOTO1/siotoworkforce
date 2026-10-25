@@ -131,8 +131,7 @@
       <h2>Tell us about your team</h2>
       <p>Fill out the form and we'll get back to you. You can also call <a href="tel:+18447468600">844.746.8600</a> or email <a href="mailto:info@sioto.com">info@sioto.com</a>.</p>
     </div>
-    <form id="lead" class="form" name="training-request" method="POST" data-netlify="true" netlify-honeypot="company_website" novalidate>
-      <input type="hidden" name="form-name" value="training-request">
+    <form id="lead" class="form" name="training-request" novalidate>
       <p class="hp" aria-hidden="true"><label>Leave this empty<input name="company_website" tabindex="-1" autocomplete="off"></label></p>
       <div class="row">
         <label>Name<input name="name" autocomplete="name" required></label>
@@ -178,9 +177,10 @@ document.getElementById('lead').addEventListener('submit',function(e){
     window.location.href='mailto:info@sioto.com?subject='+encodeURIComponent('Training request: '+v('company'))+'&body='+encodeURIComponent(body);
     btn.disabled=false;btn.textContent='Send request';
   }
-  fetch('/',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:new URLSearchParams(new FormData(f)).toString()})
-    .then(function(r){
-      if(!r.ok) throw new Error(r.status);
+  var data={};['name','company','email','phone','size','track','msg','company_website'].forEach(function(n){data[n]=v(n)});
+  fetch('https://eclstgskokpygawcxyql.supabase.co/functions/v1/training-request',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)})
+    .then(function(r){return r.json().then(function(j){if(!r.ok||!j.ok) throw new Error(r.status);});})
+    .then(function(){
       f.querySelectorAll('.row,label,button,#fine').forEach(function(el){el.hidden=true;el.style.display='none'});
       document.getElementById('ok').hidden=false;
     }).catch(mailFallback);
